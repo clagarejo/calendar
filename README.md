@@ -1,7 +1,38 @@
-# Vue 3 + Vite
+# Calendario de Recordatorios
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Este es un proyecto de calendario que permite a los usuarios agregar, editar, y eliminar recordatorios para fechas específicas. Además, el sistema obtiene información del clima de una ciudad específica y la muestra junto con el recordatorio.
 
-## Recommended IDE Setup
+## Características
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+- Crear, editar y eliminar recordatorios.
+- Ver información del clima para la ciudad especificada en el recordatorio.
+- Guardar los recordatorios en `localStorage` para persistencia.
+
+## Tecnologías Utilizadas
+
+- Vue.js
+- Vuex
+- Axios
+- SweetAlert2
+- OpenWeatherMap API
+
+## Instalación
+
+Sigue estos pasos para instalar y ejecutar el proyecto localmente.
+
+### Prerrequisitos
+
+- Node.js (versión 12 o superior)
+- Yarn
+
+##Instalar dependencias
+- yarn install
+
+## Configuración
+- Crea un archivo .env en la raíz del proyecto y añade tu API key de OpenWeatherMap
+- VUE_APP_WEATHER_API_KEY=tu_api_key
+
+##Ejecución en desarrollo
+
+- yarn serve
+
