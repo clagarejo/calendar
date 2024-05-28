@@ -38,11 +38,9 @@
           :key="reminder.id"
           :style="{ background: reminder.color }"
           @click="editReminder(reminder, day.date)"
-          class="mb-1"
+          class="mb-1 text-white"
         >
-          <div>
-            <p>{{ reminder.time }} - {{ reminder.text }}</p>
-          </div>
+          {{ reminder.time }} - {{ reminder.text }}
         </div>
       </div>
     </div>
@@ -219,6 +217,7 @@ export default {
 .day {
   padding: 10px;
   border: 1px solid #e2dbdb;
+  border-radius: 5%;
   cursor: pointer;
 }
 .today {

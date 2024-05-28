@@ -31,7 +31,7 @@ const store = createStore({
     addReminder({ commit }, reminder) {
       commit('ADD_REMINDER', reminder);
     },
-    
+
     editReminder({ commit }, updatedReminder) {
       commit('EDIT_REMINDER', updatedReminder);
     },
@@ -42,14 +42,23 @@ const store = createStore({
 
     async fetchWeather(_, { city, date }) {
       try {
-        const APIKEY = "3492ea6beb2c2f1cffbcbe13cae6f7b7"
+        const APIKEY = "3492ea6beb2c2f1cffbcbe13cae6f7b7";
         const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APIKEY}`);
-        return response.data.weather[0].description;
+        const weatherData = response.data;
+    
+        return {
+          description: weatherData.weather[0].description,
+          city: weatherData.name,
+          temperature: weatherData.main.temp,
+          icon: weatherData.weather[0].icon
+        };
+        
       } catch (error) {
         console.error("Error fetching weather data", error);
         return null;
       }
     },
+    
   },
   getters: {
     reminders: state => state.reminders,
