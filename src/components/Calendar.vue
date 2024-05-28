@@ -11,15 +11,12 @@
     </div>
 
     <div class="days">
-      <div
-        v-for="day in daysInMonth"
-        :key="day.date"
-        class="day"
-        :style="{ backgroundColor: day.color }"
-      >
-        <span @click="addReminder(day.date)" :style="{ color: day.textColor }">{{
-          day.number
-        }}</span>
+      <div v-for="day in daysInMonth" :key="day.date" class="day">
+        <span
+          @click="addReminder(day.date, day.number)"
+          :style="{ backgroundColor: day.color }"
+          >{{ day.number }}</span
+        >
         <div
           v-for="reminder in day.reminders"
           :key="reminder.id"
@@ -67,22 +64,32 @@ export default {
     daysInMonth() {
       const start = startOfMonth(this.currentDate);
       const end = endOfMonth(this.currentDate);
-      const days = eachDayOfInterval({ start, end }).map((date) => ({
-        date,
-        number: format(date, "d"),
-        reminders: this.reminders.filter(
-          (r) => format(new Date(r.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-        ),
-        color: this.getEventColorForDate(date),
-        textColor: this.getContrastColor(this.getEventColorForDate(date)),
-      }));
+
+      const days = eachDayOfInterval({ start, end })
+        .map((date) => {
+          if (!date) return null; // Verificar si la fecha es válida
+
+          const formattedDate = format(date, "yyyy-MM-dd");
+
+          const reminders = this.reminders.filter(
+            (r) => format(new Date(r.date), "yyyy-MM-dd") === formattedDate
+          );
+
+          return {
+            date,
+            number: format(date, "d"),
+            reminders,
+          };
+        })
+        .filter((day) => day !== null); // Filtrar los días nulos
 
       const paddingDays = new Array(getDay(start))
         .fill(null)
-        .map((_, i) => ({ date: null, number: "", reminders: [] }));
+        .map((_, i) => ({ date: null, number: "", reminders: [], color: "#ffffff" })); // Use white as default color for padding days
       return [...paddingDays, ...days];
     },
   },
+
   methods: {
     ...mapActions(["addReminder", "editReminder", "deleteReminder"]),
 
@@ -98,61 +105,16 @@ export default {
       );
     },
 
-    addReminder(date) {
-      const existingReminder = this.reminders.find(
-        (reminder) =>
-          format(new Date(reminder.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-      );
-
-      if (existingReminder) {
-        // Si ya existe un recordatorio para esta fecha, abrir en modo de edición
-        this.selectedDate = date;
-        this.showModal = true;
-      } else {
-        // Si no existe un recordatorio para esta fecha, abrir en modo de agregar
-        this.selectedDate = date;
-        this.showModal = true;
-      }
+    addReminder(date, day) {
+      console.log(date, "fecha");
+      console.log(day, "number");
+      this.selectedDate = { date, day };
+      this.showModal = true;
     },
 
     closeModal() {
       this.showModal = false;
       this.selectedDate = null;
-    },
-
-    getEventColorForDate(date) {
-      const eventsForDate = this.reminders.filter(
-        (r) => format(new Date(r.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-      );
-      if (eventsForDate.length > 0) {
-        // Si hay eventos para este día, devolver el color del primer evento
-        return eventsForDate[0].color;
-      } else {
-        // Si no hay eventos para este día, devolver blanco (o el color predeterminado)
-        return "white";
-      }
-    },
-
-    getContrastColor(color) {
-      // Convertir el color a rgb
-      const rgbColor = this.hexToRgb(color);
-      // Calcular el contraste
-      const brightness = Math.round(
-        (parseInt(rgbColor[0]) * 299 +
-          parseInt(rgbColor[1]) * 587 +
-          parseInt(rgbColor[2]) * 114) /
-          1000
-      );
-      // Devolver blanco o negro según el contraste
-      return brightness > 125 ? "black" : "white";
-    },
-
-    hexToRgb(hex) {
-      const bigint = parseInt(hex.substring(1), 16);
-      const r = (bigint >> 16) & 255;
-      const g = (bigint >> 8) & 255;
-      const b = bigint & 255;
-      return [r, g, b];
     },
   },
 };
@@ -161,7 +123,6 @@ export default {
 <style>
 .calendar {
   width: 100%;
-  max-width: 800px;
   margin: 0 auto;
 }
 .month {

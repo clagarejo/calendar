@@ -38,7 +38,6 @@ const store = createStore({
 
     async fetchWeather(_, { city, date }) {
       try {
-        console.log({city, date})
         const APIKEY = "3492ea6beb2c2f1cffbcbe13cae6f7b7"
         const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APIKEY}`);
         return response.data.weather[0].description;

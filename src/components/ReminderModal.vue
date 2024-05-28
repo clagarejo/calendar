@@ -2,26 +2,65 @@
   <div class="modal">
     <div class="modal-content">
       <span class="close" @click="closeModal">&times;</span>
+
       <h2>{{ isEditing ? "Editar Recordatorio" : "Agregar Recordatorio" }}</h2>
-      <form @submit.prevent="saveReminder">
-        <div>
-          <label for="text">Texto:</label>
-          <input type="text" v-model="reminder.text" maxlength="30" required />
-        </div>
-        <div>
-          <label for="city">Ciudad:</label>
-          <input type="text" v-model="reminder.city" required />
-        </div>
-        <div>
-          <label for="time">Hora:</label>
-          <input type="time" v-model="reminder.time" required />
-        </div>
-        <div>
-          <label for="color">Color:</label>
-          <input type="color" v-model="reminder.color" />
-        </div>
-        <button type="submit">{{ isEditing ? "Actualizar" : "Agregar" }}</button>
-      </form>
+
+      <div class="modal-body">
+        <form @submit.prevent="saveReminder">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="text">Texto:</label>
+              <input
+                class="form-control mb-3"
+                type="text"
+                v-model="reminder.text"
+                maxlength="30"
+                required
+                @input="validateColor"
+              />
+            </div>
+
+            <div class="col-md-6">
+              <label for="city">Ciudad:</label>
+              <input
+                class="form-control mb-3"
+                type="text"
+                v-model="reminder.city"
+                required
+                @input="validateColor"
+              />
+            </div>
+
+            <div class="col-md-6">
+              <label for="time">Hora:</label>
+              <input
+                class="form-control mb-3"
+                type="time"
+                v-model="reminder.time"
+                required
+                @input="validateColor"
+              />
+            </div>
+
+            <div class="col-md-6">
+              <label for="color">Color:</label>
+              <input
+                class="form-control mb-3"
+                type="color"
+                v-model="reminder.color"
+                @input="validateColor"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary px-4 py-2" type="submit">
+          {{ isEditing ? "Actualizar" : "Agregar" }}
+        </button>
+      </div>
+
     </div>
   </div>
 </template>
@@ -32,44 +71,43 @@ import { v4 as uuidv4 } from "uuid";
 
 export default {
   props: ["date", "reminder"],
+
   data() {
     return {
       isEditing: !!this.reminder,
-      reminderData: this.reminder || {
-        id: uuidv4(),
-        text: "",
-        city: "",
-        time: "",
-        color: "#ffffff",
-        date: this.date,
-      },
     };
   },
+
   methods: {
     ...mapActions(["addReminder", "editReminder", "fetchWeather"]),
 
     async saveReminder() {
-      if (this.isEditing) {
-        const weather = await this.fetchWeather({
-          city: this.reminder.city,
-          date: this.reminder.time,
-        });
+      const weather = await this.fetchWeather({
+        city: this.reminder.city,
+        date: this.reminder.date,
+      });
 
-        this.reminder.weather = weather;
+      this.reminder.weather = weather;
+
+      if (this.isEditing) {
         this.editReminder(this.reminder);
       } else {
-        const weather = await this.fetchWeather({
-          city: this.reminder.city,
-          date: this.reminder.time,
-        });
-        this.reminder.weather = weather;
         this.addReminder(this.reminder);
       }
+
       this.$emit("close");
     },
 
     closeModal() {
       this.$emit("close");
+    },
+
+    validateColor() {
+      // Verificar si el color tiene el formato correcto
+      if (!/^#[0-9A-F]{6}$/i.test(this.reminder.color)) {
+        // Si no tiene el formato correcto, establecer un valor predeterminado
+        this.reminder.color = "#FFFFFF"; // O cualquier otro valor predeterminado válido
+      }
     },
   },
 };
@@ -94,8 +132,7 @@ export default {
   padding: 20px;
   border-radius: 10px;
   border: 1px solid #888;
-  width: 80%;
-  max-width: 400px;
+  width: 60%;
 }
 .close {
   position: absolute;
