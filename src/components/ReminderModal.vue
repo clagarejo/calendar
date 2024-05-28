@@ -3,21 +3,18 @@
     <div class="modal-content">
       <div class="modal-header mb-3">
         <span class="close p-3" @click.prevent="closeModal">&times;</span>
-
-        <h4 class="">
-          {{ isEditing ? "Editar Recordatorio" : "Agregar Recordatorio" }}
-        </h4>
+        <h4>{{ isEditing ? "Edit reminder" : "Add reminder" }}</h4>
       </div>
-
       <div class="modal-body">
         <form @submit.prevent="saveReminder">
           <div class="row">
             <div class="col-md-6">
-              <label for="text">Texto:</label>
+              <label for="text">Remidnder</label>
               <input
                 class="form-control mb-3"
                 type="text"
-                v-model="reminder.text"
+                placeholder="Recordario"
+                v-model="localReminder.text"
                 maxlength="30"
                 required
                 @input="validateColor"
@@ -25,33 +22,34 @@
             </div>
 
             <div class="col-md-6">
-              <label for="city">Ciudad:</label>
+              <label for="city">City:</label>
               <input
                 class="form-control mb-3"
                 type="text"
-                v-model="reminder.city"
+                placeholder="Bogota"
+                v-model="localReminder.city"
                 required
                 @input="validateColor"
               />
             </div>
 
             <div class="col-md-6">
-              <label for="time">Hora:</label>
+              <label for="time">Time</label>
               <input
                 class="form-control mb-3"
                 type="time"
-                v-model="reminder.time"
+                v-model="localReminder.time"
                 required
                 @input="validateColor"
               />
             </div>
 
             <div class="col-md-6">
-              <label for="color">Color:</label>
+              <label for="color">Color</label>
               <input
-                class="form-control mb-3"
+                class="form-control mb-3 input-color"
                 type="color"
-                v-model="reminder.color"
+                v-model="localReminder.color"
                 @input="validateColor"
               />
             </div>
@@ -59,13 +57,33 @@
         </form>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn btn-outline-danger px-4 py-2" @click.prevent="closeModal">
-          Cancelar
-        </button>
-        <button class="btn btn-primary px-4 py-2" type="submit">
-          {{ isEditing ? "Actualizar" : "Agregar" }}
-        </button>
+      <div class="modal-footer d-flex justify-content-between">
+        <div>
+          <button
+            class="btn btn-danger px-4 py-2"
+            v-if="isEditing"
+            @click.prevent="deleteCurrentReminder"
+          >
+            Delete
+          </button>
+        </div>
+
+        <div class="d-flex">
+          <button
+            class="btn btn-outline-danger space px-4 py-2"
+            @click.prevent="closeModal"
+          >
+            Cancel
+          </button>
+
+          <button
+            class="btn btn-primary px-4 py-2"
+            type="submit"
+            @click.prevent="saveReminder"
+          >
+            {{ isEditing ? "Update" : "Save" }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -80,28 +98,46 @@ export default {
 
   data() {
     return {
+      localReminder: this.reminder ? { ...this.reminder } : this.newReminder(),
       isEditing: !!this.reminder,
     };
   },
 
   methods: {
-    ...mapActions(["addReminder", "editReminder", "fetchWeather"]),
-
+    ...mapActions(["addReminder", "editReminder", "deleteReminder", "fetchWeather"]),
     async saveReminder() {
+      const selectedDate = new Date(this.date);
+      const currentDate = new Date();
+
+      // Verificar si la fecha seleccionada es anterior a la fecha actual
+      if (selectedDate < currentDate) {
+        alert("No puedes crear recordatorios en días anteriores a hoy.");
+        return;
+      }
+
       const weather = await this.fetchWeather({
-        city: this.reminder.city,
-        date: this.reminder.date,
+        city: this.localReminder.city,
+        date: this.date,
       });
 
-      this.reminder.weather = weather;
+      this.localReminder.weather = weather;
 
       if (this.isEditing) {
-        this.editReminder(this.reminder);
+        this.editReminder(this.localReminder);
       } else {
-        this.addReminder(this.reminder);
+        this.localReminder.id = uuidv4();
+        this.localReminder.date = this.date;
+        this.addReminder(this.localReminder);
       }
 
       this.$emit("close");
+      this.saveRemindersToLocalStorage(); // Guardar en localStorage después de actualizar o guardar
+    },
+
+    deleteCurrentReminder() {
+      this.deleteReminder(this.localReminder.id);
+      this.$emit("close");
+      this.saveRemindersToLocalStorage(); // Guardar en localStorage después de eliminar
     },
 
     closeModal() {
@@ -109,11 +145,25 @@ export default {
     },
 
     validateColor() {
-      // Verificar si el color tiene el formato correcto
-      if (!/^#[0-9A-F]{6}$/i.test(this.reminder.color)) {
-        // Si no tiene el formato correcto, establecer un valor predeterminado
-        this.reminder.color = "#FFFFFF"; // O cualquier otro valor predeterminado válido
+      if (!/^#[0-9A-F]{6}$/i.test(this.localReminder.color)) {
+        this.localReminder.color = "#FFFFFF";
       }
+    },
+
+    newReminder() {
+      return {
+        id: uuidv4(),
+        text: "",
+        city: "",
+        time: "",
+        color: "#FFFFFF",
+        weather: "",
+      };
+    },
+
+    saveRemindersToLocalStorage() {
+      const reminders = JSON.stringify(this.$store.state.reminders);
+      localStorage.setItem("reminders", reminders);
     },
   },
 };
@@ -154,5 +204,14 @@ export default {
   color: #000;
   text-decoration: none;
   cursor: pointer;
+}
+
+.space {
+  margin-right: 10px;
+}
+
+.input-color {
+  cursor: pointer;
+  height: 35px;
 }
 </style>

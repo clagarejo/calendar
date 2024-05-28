@@ -22,6 +22,10 @@ const store = createStore({
     DELETE_REMINDER(state, id) {
       state.reminders = state.reminders.filter(r => r.id !== id);
     },
+
+    SET_REMINDERS(state, reminders) {
+      state.reminders = reminders;
+    },
   },
   actions: {
     addReminder({ commit }, reminder) {
