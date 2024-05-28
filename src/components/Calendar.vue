@@ -1,12 +1,14 @@
 <template>
-  <div class="calendar">
-    <div class="month">
-      <button @click="prevMonth">‹</button>
-      <span>{{ monthYear }}</span>
-      <button @click="nextMonth">›</button>
+  <div class="calendar py-5">
+    <div class="month mb-4">
+      <button class="btn btn-outline-primary" @click="prevMonth"> Anterior </button>
+      <strong> <span> {{ monthYear }} </span> </strong>
+      <button class="btn btn-outline-primary" @click="nextMonth"> Siguiente </button>
     </div>
 
-    <div class="weekdays">
+    <hr />
+
+    <div class="weekdays mb-4 p-3">
       <div v-for="day in daysOfWeek" :key="day">{{ day }}</div>
     </div>
 
@@ -125,20 +127,27 @@ export default {
   width: 100%;
   margin: 0 auto;
 }
+
 .month {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
 }
+
+.weekdays {
+    background: #eee;
+}
+
 .weekdays,
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
 }
+
 .day {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid #90b9f7;
 }
 </style>

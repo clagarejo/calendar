@@ -1,9 +1,13 @@
 <template>
   <div class="modal">
     <div class="modal-content">
-      <span class="close" @click="closeModal">&times;</span>
+      <div class="modal-header mb-3">
+        <span class="close p-3" @click.prevent="closeModal">&times;</span>
 
-      <h2>{{ isEditing ? "Editar Recordatorio" : "Agregar Recordatorio" }}</h2>
+        <h4 class="">
+          {{ isEditing ? "Editar Recordatorio" : "Agregar Recordatorio" }}
+        </h4>
+      </div>
 
       <div class="modal-body">
         <form @submit.prevent="saveReminder">
@@ -56,11 +60,13 @@
       </div>
 
       <div class="modal-footer">
+        <button class="btn btn-outline-danger px-4 py-2" @click.prevent="closeModal">
+          Cancelar
+        </button>
         <button class="btn btn-primary px-4 py-2" type="submit">
           {{ isEditing ? "Actualizar" : "Agregar" }}
         </button>
       </div>
-
     </div>
   </div>
 </template>
