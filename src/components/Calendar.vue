@@ -21,13 +21,36 @@
         class="day size-number"
         :class="{
           today: day.isToday,
+          'prev-month': day.isPrevMonth,
+          'next-month': day.isNextMonth,
         }"
       >
-        <span class="style-number">
+        <span
+          @click="addReminder(day.date, day.number)"
+          :style="{ backgroundColor: day.color }"
+          class="style-number"
+        >
           {{ day.number }}
         </span>
+
+        <div
+          v-for="reminder in day.reminders"
+          :key="reminder.id"
+          :style="{ background: reminder.color }"
+          @click="editReminder(reminder, day.date)"
+          class="mb-1 text-white"
+        >
+          {{ reminder.time }} - {{ reminder.text }}
+        </div>
       </div>
     </div>
+
+    <ReminderModal
+      v-if="showModal"
+      @close="closeModal"
+      :date="selectedDate"
+      :reminder="selectedReminder"
+    />
   </div>
 </template>
 
@@ -37,18 +60,26 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
+  getDay,
   isToday,
   subMonths,
   addMonths,
 } from "date-fns";
+import { mapActions, mapGetters } from "vuex";
+import ReminderModal from "./ReminderModal.vue";
 
 export default {
+  components: { ReminderModal },
   data() {
     return {
       currentDate: new Date(),
+      showModal: false,
+      selectedDate: null,
+      selectedReminder: null,
     };
   },
   computed: {
+    ...mapGetters(["reminders"]),
     daysOfWeek() {
       return [
         "Sunday",
@@ -60,31 +91,82 @@ export default {
         "Saturday",
       ];
     },
+
     monthYear() {
       return format(this.currentDate, "MMMM yyyy");
     },
+
     daysInMonth() {
       const start = startOfMonth(this.currentDate);
       const end = endOfMonth(this.currentDate);
 
-      return eachDayOfInterval({ start, end }).map((date) => {
-        return {
-          date,
-          number: format(date, "d"),
-          isToday: isToday(date),
-        };
-      });
+      const days = eachDayOfInterval({ start, end })
+        .map((date) => {
+          if (!date) return null;
+          const formattedDate = format(date, "yyyy-MM-dd");
+          const reminders = this.reminders.filter(
+            (r) => format(new Date(r.date), "yyyy-MM-dd") === formattedDate
+          );
+          return {
+            date,
+            number: format(date, "d"),
+            reminders,
+            isToday: isToday(date),
+            isPrevMonth: false,
+            isNextMonth: false,
+          };
+        })
+        .filter((day) => day !== null);
+      return [...days];
     },
   },
   methods: {
+    ...mapActions(["addReminder", "editReminder", "deleteReminder"]),
+
     prevMonth() {
-      this.currentDate = subMonths(this.currentDate, 1);
+      this.currentDate = new Date(
+        this.currentDate.setMonth(this.currentDate.getMonth() - 1)
+      );
     },
+
     nextMonth() {
-      this.currentDate = addMonths(this.currentDate, 1);
+      this.currentDate = new Date(
+        this.currentDate.setMonth(this.currentDate.getMonth() + 1)
+      );
     },
+
+    addReminder(date, day) {
+      this.selectedDate = date;
+      this.selectedReminder = null;
+      this.showModal = true;
+    },
+
+    editReminder(reminder, date) {
+      this.selectedDate = date;
+      this.selectedReminder = reminder;
+      this.showModal = true;
+    },
+
+    closeModal() {
+      this.showModal = false;
+      this.selectedDate = null;
+      this.selectedReminder = null;
+    },
+
+    loadRemindersFromLocalStorage() {
+      const reminders = JSON.parse(localStorage.getItem("reminders"));
+      if (reminders) {
+        this.$store.commit("SET_REMINDERS", reminders);
+      }
+    },
+
   },
-};
+  
+  mounted() {
+    this.loadRemindersFromLocalStorage();
+  },
+}
+
 </script>
 
 <style scoped>
@@ -115,11 +197,17 @@ export default {
   background-color: #0d6efd;
   color: #fff;
 }
+.prev-month,
+.next-month {
+  color: #ccc;
+}
+
 .size-number {
   height: 100px;
   font-size: 14px;
   overflow: auto;
 }
+
 .style-number {
   margin-right: 90%;
 }
