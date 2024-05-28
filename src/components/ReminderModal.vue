@@ -17,7 +17,6 @@
                 v-model="localReminder.text"
                 maxlength="30"
                 required
-                @input="validateColor"
               />
             </div>
 
@@ -29,7 +28,6 @@
                 placeholder="City"
                 v-model="localReminder.city"
                 required
-                @input="validateColor"
               />
             </div>
 
@@ -40,7 +38,6 @@
                 type="time"
                 v-model="localReminder.time"
                 required
-                @input="validateColor"
               />
             </div>
 
@@ -50,6 +47,7 @@
                 class="form-control mb-3 input-color"
                 type="color"
                 v-model="localReminder.color"
+                required
                 @input="validateColor"
               />
             </div>
@@ -67,7 +65,7 @@
             Weather Information
           </h5>
           <span v-if="localReminder.weather.description">
-            Decription: {{ localReminder.weather.description }} <br />
+            Description: {{ localReminder.weather.description }} <br />
             City: {{ localReminder.weather.city }} <br />
             Temperature: {{ localReminder.weather.temperature }} °C
           </span>
@@ -122,6 +120,21 @@ export default {
     ...mapActions(["addReminder", "editReminder", "deleteReminder", "fetchWeather"]),
 
     async saveReminder() {
+      // Validar campos vacíos
+      if (
+        !this.localReminder.text ||
+        !this.localReminder.city ||
+        !this.localReminder.time ||
+        !this.localReminder.color
+      ) {
+        this.$swal({
+          title: "Error",
+          icon: "error",
+          text: "All fields are required.",
+        });
+        return;
+      }
+
       const selectedDate = new Date(this.date);
       const currentDate = new Date();
 

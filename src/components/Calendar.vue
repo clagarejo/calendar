@@ -38,7 +38,10 @@
           :key="reminder.id"
           :style="{ background: reminder.color }"
           @click="editReminder(reminder, day.date)"
-          class="mb-1 text-white"
+          :class="{
+            'mb-1': true,
+            'text-white': reminder.color.toLowerCase() !== '#ffffff',
+          }"
         >
           {{ reminder.time }} - {{ reminder.text }}
         </div>
@@ -91,7 +94,7 @@ export default {
         "Saturday",
       ];
     },
-
+    
     monthYear() {
       return format(this.currentDate, "MMMM yyyy");
     },
@@ -104,9 +107,12 @@ export default {
         .map((date) => {
           if (!date) return null;
           const formattedDate = format(date, "yyyy-MM-dd");
-          const reminders = this.reminders.filter(
-            (r) => format(new Date(r.date), "yyyy-MM-dd") === formattedDate
-          );
+          const reminders = this.reminders
+            .filter((r) => format(new Date(r.date), "yyyy-MM-dd") === formattedDate)
+            .sort(
+              (a, b) =>
+                new Date(`1970-01-01T${a.time}:00`) - new Date(`1970-01-01T${b.time}:00`)
+            );
           return {
             date,
             number: format(date, "d"),
@@ -117,56 +123,84 @@ export default {
           };
         })
         .filter((day) => day !== null);
-      return [...days];
+
+      return [...days ];
     },
   },
   methods: {
     ...mapActions(["addReminder", "editReminder", "deleteReminder"]),
-
+    getPrevMonthPaddingDays(start) {
+      const prevMonth = subMonths(start, 1);
+      const daysInPrevMonth = eachDayOfInterval({
+        start: startOfMonth(prevMonth),
+        end: endOfMonth(prevMonth),
+      });
+      const paddingDays = daysInPrevMonth.slice(-getDay(start)).map((date) => ({
+        date,
+        number: format(date, "d"),
+        reminders: [],
+        isToday: isToday(date),
+        isPrevMonth: true,
+        isNextMonth: false,
+      }));
+      return paddingDays;
+    },
+    getNextMonthPaddingDays(end, start) {
+      const nextMonth = addMonths(end, 1);
+      const daysInNextMonth = eachDayOfInterval({
+        start: startOfMonth(nextMonth),
+        end: endOfMonth(nextMonth),
+      });
+      const daysToFill =
+        42 - (getDay(end) + 1) - eachDayOfInterval({ start, end }).length;
+      const paddingDays = daysInNextMonth.slice(0, daysToFill).map((date) => ({
+        date,
+        number: format(date, "d"),
+        reminders: [],
+        isToday: isToday(date),
+        isPrevMonth: false,
+        isNextMonth: true,
+      }));
+      return paddingDays;
+    },
     prevMonth() {
       this.currentDate = new Date(
         this.currentDate.setMonth(this.currentDate.getMonth() - 1)
       );
     },
-
     nextMonth() {
       this.currentDate = new Date(
         this.currentDate.setMonth(this.currentDate.getMonth() + 1)
       );
     },
-
     addReminder(date, day) {
       this.selectedDate = date;
       this.selectedReminder = null;
       this.showModal = true;
     },
-
     editReminder(reminder, date) {
       this.selectedDate = date;
       this.selectedReminder = reminder;
       this.showModal = true;
     },
-
     closeModal() {
       this.showModal = false;
       this.selectedDate = null;
       this.selectedReminder = null;
     },
-
     loadRemindersFromLocalStorage() {
+      // Cargar desde el almacenamiento local (localStorage)
       const reminders = JSON.parse(localStorage.getItem("reminders"));
       if (reminders) {
         this.$store.commit("SET_REMINDERS", reminders);
       }
     },
-
   },
-  
   mounted() {
+    // Cargar recordatorios desde el almacenamiento local al montar el componente
     this.loadRemindersFromLocalStorage();
   },
-}
-
+};
 </script>
 
 <style scoped>
