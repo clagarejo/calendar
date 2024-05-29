@@ -1,6 +1,6 @@
 <template>
-  <div class="calendar py-5">
-    <div class="month mb-4">
+  <div class="calendar py-5 row">
+    <div class="month mb-4 col-sm-12  col-lg-12">
       <button class="btn btn-outline-primary" @click="prevMonth">Anterior</button>
       <strong>
         <span> {{ monthYear }} </span>
@@ -10,11 +10,11 @@
 
     <hr />
 
-    <div class="weekdays bg-primary mb-4 p-3">
+    <div class="weekdays bg-primary mb-4 p-3 col-sm-12 col-lg-12">
       <div v-for="day in daysOfWeek" :key="day">{{ day }}</div>
     </div>
 
-    <div class="days">
+    <div class="days col-sm-12 col-lg-12">
       <div
         v-for="day in daysInMonth"
         :key="day.date"
