@@ -111,9 +111,7 @@ export default {
     };
   },
 
-  mounted() {
-      console.log(this.localReminder.weather, 'aver')
-  },
+  
   methods: {
     ...mapActions(["addReminder", "editReminder", "deleteReminder", "fetchWeather"]),
 
