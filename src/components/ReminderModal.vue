@@ -55,16 +55,10 @@
         </form>
 
         <div class="mt-4" v-if="localReminder.weather">
-          <h5
-            v-if="
-              localReminder.weather.description ||
-              localReminder.weather.city ||
-              localReminder.weather.temperature
-            "
-          >
+          <h5>
             Weather Information
           </h5>
-          <span v-if="localReminder.weather.description">
+          <span>
             Description: {{ localReminder.weather.description }} <br />
             City: {{ localReminder.weather.city }} <br />
             Temperature: {{ localReminder.weather.temperature }} °C
@@ -116,6 +110,10 @@ export default {
       isEditing: !!this.reminder,
     };
   },
+
+  mounted() {
+      console.log(this.localReminder.weather, 'aver')
+  },
   methods: {
     ...mapActions(["addReminder", "editReminder", "deleteReminder", "fetchWeather"]),
 
@@ -138,11 +136,18 @@ export default {
       const selectedDate = new Date(this.date);
       const currentDate = new Date();
 
-      if (selectedDate < currentDate) {
+      // Obtener la fecha actual sin la hora
+      const today = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate()
+      );
+
+      if (selectedDate < today) {
         this.$swal({
           title: "Ups",
           icon: "warning",
-          text: "You can't create reminders in past days.",
+          text: "You can't create reminders for past days.",
         });
         return;
       }
@@ -218,7 +223,7 @@ export default {
         city: "",
         time: "",
         color: "#FFFFFF",
-        weather: {},
+        weather: null,
       };
     },
 
