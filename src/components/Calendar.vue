@@ -18,6 +18,7 @@
       <div
         v-for="day in daysInMonth"
         :key="day.date"
+        @click="addReminder(day.date, day.number)"
         class="day size-number"
         :class="{
           today: day.isToday,
@@ -26,7 +27,6 @@
         }"
       >
         <span
-          @click="addReminder(day.date, day.number)"
           :style="{ backgroundColor: day.color }"
           class="style-number"
         >
